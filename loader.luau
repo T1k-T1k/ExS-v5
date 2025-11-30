@@ -1,10 +1,10 @@
 --[[
-    Script: Automatic Exam Solver (Version 6.5)
+    Script: Automatic Exam Solver (Version 6.6)
     
     Changes:
     - Fixed: Highlight is now purely cosmetic decoration
     - Answer logic is completely independent from highlight
-    - Answer number is saved before any UI changes
+    - Fixed: "Sudan" flag question now excludes "South Sudan" from context matching
 ]]
 
 local Players = game:GetService("Players")
@@ -341,6 +341,12 @@ local function highlightButton(button)
     end
 end
 
+-- Check if this is the Sudan flag question
+local function isSudanFlagQuestion(questionText)
+    local normalized = normalizeText(questionText)
+    return string.find(normalized, "flag") and string.find(normalized, "belong")
+end
+
 local function solveQuestion(sourceFrameName, isInitial)
     local sheet = getUI()
     if not sheet then 
@@ -423,6 +429,12 @@ local function solveQuestion(sourceFrameName, isInitial)
         return 
     end
 
+    -- Check if this is the Sudan flag question (special handling)
+    local isSudanQuestion = isSudanFlagQuestion(questionText)
+    if isSudanQuestion then
+        print("[SOLVER] ⚠️ SPECIAL CASE: Sudan flag question detected - excluding 'South Sudan'")
+    end
+
     -- ВАЖНО: Определяем и СОХРАНЯЕМ номер ответа ОДИН РАЗ
     -- Этот номер НЕ ИЗМЕНИТСЯ и будет использован для отправки
     local answerNumber = -1
@@ -438,6 +450,13 @@ local function solveQuestion(sourceFrameName, isInitial)
         if ansBtn and (ansBtn:IsA("TextButton") or ansBtn:IsA("TextLabel")) then
             local buttonText = trim(ansBtn.Text)
             local normalizedButton = normalizeText(buttonText)
+            
+            -- SPECIAL RULE: Exclude "South Sudan" for Sudan flag question
+            if isSudanQuestion and string.find(string.lower(buttonText), "south sudan") then
+                print(string.format("[SOLVER]   Option %d: '%s' << EXCLUDED (South Sudan)", i, buttonText))
+                -- Skip this option
+                continue
+            end
             
             local isMatch = false
             
@@ -472,6 +491,8 @@ local function solveQuestion(sourceFrameName, isInitial)
                 answerNumber = i  -- SAVED ANSWER NUMBER (independent from UI)
                 correctButton = ansBtn  -- Saved button reference (only for highlight decoration)
             end
+            
+            continue
         else
             warn(string.format("[SOLVER]   Option %d: NOT FOUND", i))
         end
@@ -524,13 +545,13 @@ end
 
 local function initListeners()
     print("[SOLVER] =============================================")
-    print("[SOLVER] Exam Solver v6.5 Started!")
+    print("[SOLVER] Exam Solver v6.6 Started!")
     print(string.format("[SOLVER] Answer delay: %.2f sec", SOLVE_DELAY))
     print(string.format("[SOLVER] Initial delay: %.2f sec", INITIAL_DELAY))
     print(string.format("[SOLVER] Initial timeout: %d sec", INITIAL_TIMEOUT))
     print("[SOLVER] =============================================")
     
-    BoredLibrary.prompt("Exam Solver v6.5", "Script loaded successfully!", 3)
+    BoredLibrary.prompt("Exam Solver v6.6", "Script loaded successfully!", 3)
     
     local sheet = getUI()
     
@@ -634,3 +655,4 @@ local function initListeners()
 end
 
 initListeners()
+print('loaded')
