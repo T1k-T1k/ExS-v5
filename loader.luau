@@ -132,7 +132,7 @@ end
 local BoredLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/T1k-T1k/SakuraHub_RECODE/refs/heads/main/UILibs/BoredLib.lua"))()
 
 local Event = ReplicatedStorage:FindFirstChild("Exam")
-local SOLVE_DELAY = 2.25
+local SOLVE_DELAY = 5
 local INITIAL_DELAY = 2
 local INITIAL_TIMEOUT = 15
 
